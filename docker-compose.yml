@@ -1,0 +1,81 @@
+version: '3.6'
+
+networks:
+    example-main:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 192.168.25.0/24
+        labels:
+            example.description: "Main domain's containers network"
+
+services:
+    # Nginx server
+    nginx:
+        image: example_nginx:latest
+        build: ./Website.Nginx
+        restart: always
+        cap_drop:
+            - ALL # We can drop all thanks to unpriviledged execution
+        dns:
+            - 1.1.1.1
+            - 8.8.8.8
+        ipc: none
+        ports:
+            - "80:8080/tcp"
+            - "443:8083/tcp"
+        depends_on:
+            - main-frontend
+        networks:
+            example-main:
+                aliases:
+                    - nginx
+        labels:
+            example.description: "Main domains webstack"
+            example.specific-description: "nginx reverse-proxy"
+    # /Nginx server
+
+    # Next.js Main Frontend server
+    main-frontend:
+        image: example_frontend:latest
+        build: ./Website
+        restart: always
+        cap_drop:
+            - ALL # We can drop all thanks to unpriviledged execution
+        dns:
+            - 1.1.1.1
+            - 8.8.8.8
+        ipc: none
+        ports:
+            - "9998:3000/tcp"
+        networks:
+            example-main:
+                aliases:
+                    - main-frontend
+        labels:
+            example.description: "Main domains webstack"
+            example.specific-description: "Next.js Frontend server"
+    # /Next.js Main Frontend server
+
+    # ASP.NET Core Main Backend server
+    main-backend:
+        image: example_backend:latest
+        build: ./Website.Backend
+        restart: always
+        cap_drop:
+            - ALL # We can drop all thanks to unpriviledged execution
+        dns:
+            - 1.1.1.1
+            - 8.8.8.8
+        ipc: none
+        ports:
+            - "9999:8080/tcp"
+        networks:
+            example-main:
+                aliases:
+                    - main-backend
+        labels:
+            example.description: "Main domains webstack"
+            example.specific-description: "ASP.NET Core Backend server"
+    # /ASP.NET Core Main Backend server

@@ -1,0 +1,8 @@
+.vs/
+.git/
+/packages/
+obj/
+publish/
+bin/
+package-lock.json
+node_modules/
